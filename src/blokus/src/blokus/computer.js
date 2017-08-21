@@ -131,5 +131,3 @@ function playGame() {
   }
   return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
 }
-
-console.log(testComputer());;
