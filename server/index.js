@@ -10,18 +10,16 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.resolve(__dirname, '..', 'build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '..', 'build', 'index.html'));
+  });
+} else {
   const webpackDevMiddleware = require('webpack-dev-middleware');
   const webpack = require('webpack');
   const webpackConfig = require('../config/webpack.config.dev');
   app.use(webpackDevMiddleware(webpack(webpackConfig), { publicPath: '/' }));
-}
-
-if (process.NODE_ENV === 'production') {
-  app.use(express.static(path.resolve(__dirname, 'build')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
-  });
 }
 
 const currentGames = {};
