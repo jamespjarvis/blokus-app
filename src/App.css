@@ -1,0 +1,3 @@
+.app-container, .content-container {
+  min-height: 100vh;
+}
