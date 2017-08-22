@@ -266,30 +266,30 @@ function Computer(game) {
 }
 
 module.exports = Computer;
-
-const game = require('../game/game');
-
-function testComputer() {
-  const results = [...Array(4).fill(0)]
-  let games = 0;
-  console.time('onegame');
-  for (let i = 0; i < 1; i++) {
-    const gResult = playGame();
-    console.log(gResult);
-    gResult.forEach((player, id) => results[id] += player.score);
-    games++;
-    console.timeEnd('onegame');
-  }
-  return results.map((score, index) => ({ player: index + 1, avgscore: score / games }));
-}
-
-function playGame() {
-  const g = game();
-  const c = new Computer(g);
-  while (!g.isOver()) {
-    c.playGame();
-  }
-  return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
-}
-// playGame();
-testComputer();
+//
+// const game = require('../game/game');
+//
+// function testComputer() {
+//   const results = [...Array(4).fill(0)]
+//   let games = 0;
+//   console.time('onegame');
+//   for (let i = 0; i < 1; i++) {
+//     const gResult = playGame();
+//     console.log(gResult);
+//     gResult.forEach((player, id) => results[id] += player.score);
+//     games++;
+//     console.timeEnd('onegame');
+//   }
+//   return results.map((score, index) => ({ player: index + 1, avgscore: score / games }));
+// }
+//
+// function playGame() {
+//   const g = game();
+//   const c = new Computer(g);
+//   while (!g.isOver()) {
+//     c.playGame();
+//   }
+//   return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
+// }
+// // playGame();
+// testComputer();
