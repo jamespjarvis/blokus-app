@@ -61,7 +61,7 @@ function Computer(game) {
                     }
                     const placementResult = game.place(placement);
                     if (placementResult.success) {
-                      const score = getPositionScore(player, piece, placement.position);
+                      const score = getPositionScore(player.id, piece, placement.position);
                       placement.score = score;
                       if (!results.some(result => result.score >= score)) {
                         results.push(placement);
@@ -178,10 +178,9 @@ function Computer(game) {
     const shapePositions = getShapePositions(shape, position);
     let score = piece.id;
     shapePositions.forEach(pos => {
-      const diagonals = getDiagonalPositions(pos);
-      const adjacents = getAdjacentPositions(pos);
-      const combined = diagonals.concat(adjacents).filter(p => !isOutOfBounds(p, board) && occupiedByOpposingPlayer(player, board, pos));
-      score += combined.length;
+      const diagonals = getDiagonalPositions(pos).filter(p => !isOutOfBounds(p, board) && occupiedByOpposingPlayer(player, board, pos));;
+      const adjacents = getAdjacentPositions(pos).filter(p => !isOutOfBounds(p, board) && occupiedByOpposingPlayer(player, board, pos));;
+      score += (diagonals.length * 2) + adjacents.length;
     });
     return score;
   }
@@ -267,30 +266,30 @@ function Computer(game) {
 }
 
 module.exports = Computer;
-//
-// const game = require('../game/game');
-//
-// function testComputer() {
-//   const results = [...Array(4).fill(0)]
-//   let games = 0;
-//   console.time('onegame');
-//   for (let i = 0; i < 1; i++) {
-//     const gResult = playGame();
-//     console.log(gResult);
-//     gResult.forEach((player, id) => results[id] += player.score);
-//     games++;
-//     console.timeEnd('onegame');
-//   }
-//   return results.map((score, index) => ({ player: index + 1, avgscore: score / games }));
-// }
-//
-// function playGame() {
-//   const g = game();
-//   const c = new Computer(g);
-//   while (!g.isOver()) {
-//     c.playGame();
-//   }
-//   return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
-// }
-// // playGame();
-// testComputer();
+
+const game = require('../game/game');
+
+function testComputer() {
+  const results = [...Array(4).fill(0)]
+  let games = 0;
+  console.time('onegame');
+  for (let i = 0; i < 1; i++) {
+    const gResult = playGame();
+    console.log(gResult);
+    gResult.forEach((player, id) => results[id] += player.score);
+    games++;
+    console.timeEnd('onegame');
+  }
+  return results.map((score, index) => ({ player: index + 1, avgscore: score / games }));
+}
+
+function playGame() {
+  const g = game();
+  const c = new Computer(g);
+  while (!g.isOver()) {
+    c.playGame();
+  }
+  return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
+}
+// playGame();
+testComputer();
