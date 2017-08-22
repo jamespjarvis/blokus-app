@@ -44,9 +44,7 @@ export class Blokus extends Component {
     socket.on('update:players', ({ players }) => {
       const currentPlayer = this.game.currentPlayer();
       if (!this.game.isOver() && currentPlayer !== null && !players.includes(currentPlayer.id)) {
-        let c = new Computer(this.game);
-        const turns = c.playGame();
-        socket.emit('take:turn', ({ turns }));
+        socket.emit('computer:turn', ({ turns: this.game.turns() }));
       }
     });
 

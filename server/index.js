@@ -9,6 +9,8 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
+const { game } = require('./blokus/src/index');
+const Computer = require('./blokus/src/blokus/computer');
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, '..', 'build')));
@@ -69,7 +71,26 @@ io.on('connection', (socket) => {
       io.to(clientGameId).emit('take:turn', { turns });
     }
   });
-
+  socket.on('computer:turn', ({ turns }) => {
+    const g = game();
+    const c = new Computer(g);
+    const prevTurns = currentGames[clientGameId].savedTurns;
+    turns.forEach(turn => {
+      if (turn.isPass) {
+        g.pass();
+      } else {
+        const placement = {
+          piece: turn.piece,
+          flipped: turn.flipped,
+          rotations: turn.rotations,
+          position: turn.position
+        }
+        g.place(placement);
+      }
+    });
+    c.playGame();
+    io.to(clientGameId).emit('take:turn', ({ turns: g.turns() }));
+  });
   const tearDown = function() {
     socket.leave(clientGameId, () => {
       if (currentGames.hasOwnProperty(clientGameId)) {
