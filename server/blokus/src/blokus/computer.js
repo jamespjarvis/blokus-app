@@ -178,9 +178,9 @@ function Computer(game) {
     const shapePositions = getShapePositions(shape, position);
     let score = piece.id;
     shapePositions.forEach(pos => {
-      const diagonals = getDiagonalPositions(pos).filter(p => !isOutOfBounds(p, board) && occupiedByOpposingPlayer(player, board, pos));;
+      const diagonals = getDiagonalPositions(pos).filter(p => !isOutOfBounds(p, board) && !occupiedByOpposingPlayer(player, board, pos));
       const adjacents = getAdjacentPositions(pos).filter(p => !isOutOfBounds(p, board) && occupiedByOpposingPlayer(player, board, pos));;
-      score += (diagonals.length * 2) + adjacents.length;
+      score += diagonals.length + adjacents.length;
     });
     return score;
   }
