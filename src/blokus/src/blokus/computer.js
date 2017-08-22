@@ -26,6 +26,15 @@ function Computer(game) {
     }
     return cb(results);
   }
+  const getAdjacentPositions = (position) => {
+    const { row, col } = position;
+    return [
+      { row, col: col + 1 },
+      { row, col: col - 1 },
+      { row: row + 1, col },
+      { row: row - 1, col }
+    ];
+  }
   const vectorDifferenceFromCenter = (position) => {
     return Object.values(position).map((item, i) => 10 - item);
   }
@@ -45,16 +54,33 @@ function Computer(game) {
     return row < 0 || col < 0 || row >= height || col >= width;
   }
   const occupiedByOpposingPlayer = (player, board, position) => {
+    console.log(player);
     return board[position.row][position.col] !== null && board[position.row][position.col] !== player;
+  }
+  const scoreResultsByAdjacents = (results) => {
+    const board = game.board();
+    return results.map(result => {
+      const adjacents = getAdjacentPositions(result.position)
+        .filter(pos => !isOutOfBounds(pos, board) && occupiedByOpposingPlayer(result.player, board, pos));
+      return Object.assign(result, { adjacentScore: adjacents.length })
+    })
   }
   const scoreResultsByDiagonals = (results) => {
     const board = game.board();
     return results.map(result => {
         const diagonals = getDiagonalPositions(result.position)
           .filter(pos => !isOutOfBounds(pos, board) && occupiedByOpposingPlayer(result.player, board, pos));
-        return Object.assign(result, { score: diagonals.length });
+        return Object.assign(result, { diagonalScore: diagonals.length });
       })
       .sort((a, b) => a.score > b.score);
+  }
+  const combineScores = (results) => {
+    return results.map(result => Object.assign(result, { score: result.adjacentScore + result.diagonalScore }));
+  }
+  const totalPositionScore = (results) => {
+    const diagonals = scoreResultsByDiagonals(results)
+    const adjacents = scoreResultsByAdjacents(diagonals);
+    return combineScores(adjacents);
   }
   const getMove = (results) => {
     return results[Math.floor(Math.random() * results.length)];
@@ -65,7 +91,7 @@ function Computer(game) {
     return game.place({ piece, flipped, rotations, position });
   }
   const playTurn = (player, piece) => {
-    let moves = findMoves(player, piece, scoreResultsByDiagonals);
+    let moves = findMoves(player, piece, totalPositionScore);
     if (moves.length > 0) {
       const maxScore = moves.reduce((max, curr) => max.score > curr.score ? max : curr)[0];
       if (!maxScore) {
@@ -108,26 +134,26 @@ function Computer(game) {
 }
 
 module.exports = Computer;
-const game = require('../game/game');
-
-function testComputer() {
-  const results = [...Array(4).fill(0)]
-  let games = 0;
-  for (let i = 0; i < 10; i++) {
-    const gResult = playGame();
-
-    console.log(gResult);
-    gResult.forEach((player, id) => results[id] += player.score);
-    games++;
-  }
-  return results.map((score, index) => ({player: index + 1, avgscore: score / games}));
-}
-
-function playGame() {
-  const g = game();
-  const c = new Computer(g);
-  while (!g.isOver()) {
-    c.playGame();
-  }
-  return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
-}
+//
+// const game = require('../game/game');
+//
+// function testComputer() {
+//   const results = [...Array(4).fill(0)]
+//   let games = 0;
+//   for (let i = 0; i < 1; i++) {
+//     const gResult = playGame();
+//     console.log(gResult);
+//     gResult.forEach((player, id) => results[id] += player.score);
+//     games++;
+//   }
+//   return results.map((score, index) => ({ player: index + 1, avgscore: score / games }));
+// }
+//
+// function playGame() {
+//   const g = game();
+//   const c = new Computer(g);
+//   while (!g.isOver()) {
+//     c.playGame();
+//   }
+//   return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
+// }
