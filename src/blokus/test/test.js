@@ -1,2 +1,1 @@
-  const results = [...Array(4).fill([])]
-  console.log(results);
+  const results = [...Array(4).keys()];

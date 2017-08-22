@@ -20,8 +20,9 @@ const Game = (options = {}) => {
 
     let playerId = turns.length > 0 ? (turns[turns.length - 1].player + 1) % 4 : 0;
     let player = players.find(player => player.id === playerId);
-
-    while (player.hasPassed) {
+    let piecesRemaining = this.availablePieces({ player: player.id });
+    
+    while (player.hasPassed || !piecesRemaining.length) {
       playerId = (playerId + 1) % 4;
       player = findPlayer(players, playerId);
     }
