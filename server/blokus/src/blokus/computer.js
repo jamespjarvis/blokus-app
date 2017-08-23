@@ -1,9 +1,11 @@
 function Computer() {
   let moveCount = 0;
+  // each players starting corner
   const getCorrectCornerPosition = (player, board) => {
     const cornerPositions = getCornerPositions(board);
     return cornerPositions[player];
   }
+  // return starting corners with indexes corresponding to player id
   const getCornerPositions = (board) => {
     const height = board.length;
     const width = board[0].length;
@@ -14,7 +16,7 @@ function Computer() {
       { row: height - 1, col: 0 }
     ]
   }
-
+  // get positionas adjacent to a cell on the board
   const getAdjacentPositions = (position) => {
     const { row, col } = position;
     return [
@@ -24,9 +26,7 @@ function Computer() {
       { row: row - 1, col }
     ];
   }
-  const vectorDifferenceFromCenter = (position) => {
-    return Object.values(position).map((item, i) => 10 - item);
-  }
+  // get positions diagonal from a cell on the board
   const getDiagonalPositions = (position) => {
     const { row, col } = position;
     return [
@@ -36,36 +36,42 @@ function Computer() {
       { row: row - 1, col: col - 1 }
     ];
   }
+  // determine whether a position is not on the board
   const isOutOfBounds = (position, board) => {
     const { row, col } = position;
     const height = board.length;
     const width = board[0].length;
     return row < 0 || col < 0 || row >= height - 1 || col >= width - 1;
   }
+  // determine whether it is a player's first move
   const isFirstMove = (player, board) => {
     return !board.some(row => row.some(cell => cell === player));
   }
-
+  // get number of cells away from center of board
   const distanceToCenter = (position) => {
     // chebyshev distance
     return Math.max(Math.abs(10 - position.row), Math.abs(10 - position.col));
   }
-
+  // calculate a score based on the players available free corners and current board state
   const freeCorners = (player, board) => {
 
     let score = 0;
 
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[0].length; j++) {
+        // if board cell is occupied by player
         if (board[i][j] === player.id) {
+
           const position = { row: i, col: j };
+
           const diagonals = getDiagonalPositions(position);
+
           diagonals.forEach(d => {
             const diagonalAdjacents = getAdjacentPositions(d);
             diagonalAdjacents.forEach(adj => {
               if (!isOutOfBounds(adj, board)) {
                 // if adjacent position is occupied by opposing player - potential bloke
-                if (board[adj.row][adj.col] !== null && board[adj.row][adj.col] !== player.id || board[adj.row][adj.col] === null) {
+                if ((board[adj.row][adj.col] !== null && board[adj.row][adj.col] !== player.id) || (board[adj.row][adj.col] === null)) {
                   score += 1;
                 }
               } else {
@@ -75,6 +81,7 @@ function Computer() {
           });
 
           const adjacents = getAdjacentPositions(position);
+
           adjacents.forEach(adj => {
             if (!isOutOfBounds(adj, board)) {
               if (board[adj.row][adj.col] !== null) {
@@ -84,11 +91,12 @@ function Computer() {
                   if (!isOutOfBounds(d, board)) {
                     // is opponent corner piece
                     if (board[d.row][d.col] === opponent) {
+                      // and not a cell diagonal to one of the player's cells
                       const isPlayerDiagonal = diagonals.find(p => p.row === d.row && p.col === d.col);
                       if (isPlayerDiagonal === undefined) {
-                        score += 2;
+                        score += 1;
                       } else {
-                        score -= 2;
+                        score -= 1;
                       }
                     }
                   }

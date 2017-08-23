@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import io from 'socket.io-client';
 
 import { Board } from './Board/Board';
-import Computer from './blokus/src/blokus/computer';
 import { game } from './blokus/src/index';
 import './Blokus.css';
 
