@@ -1,22 +1,5 @@
-function Computer(game) {
+function Computer() {
   let moveCount = 0;
-  const findAvailablePositionsForMove = (player) => {
-    const results = [];
-    const board = game.board();
-    board.forEach((row, rowIdx) => {
-      row.forEach((col, colIdx) => {
-        if (board[rowIdx][colIdx] === player) {
-          const position = { row: rowIdx, col: colIdx };
-          const diagonals = getDiagonalPositions(position).filter(pos => {
-            const adjs = getAdjacentPositions(pos).filter(p => !isOutOfBounds(p, board)).some(p => board[p.row][p.col] === player.id);
-            return !isOutOfBounds(pos, board) && !adjs && board[pos.row][pos.col] === null;
-          });
-          results.push(...diagonals);
-        }
-      });
-    });
-    return results.concat([getCorrectCornerPosition(player, board)]);
-  }
   const getCorrectCornerPosition = (player, board) => {
     const cornerPositions = getCornerPositions(board);
     return cornerPositions[player];
@@ -32,80 +15,6 @@ function Computer(game) {
     ]
   }
 
-  const findAndTestAvailablePositions = (player, pieces, cb) => {
-    let results = [];
-    const maxAvailablePieceCells = Math.max(...pieces.map(piece => piece.numCells));
-    const largestAvailablePieces = pieces.filter(p => p.numCells === maxAvailablePieceCells);
-    const availablePositions = findAvailablePositionsForMove(player.id);
-    availablePositions.forEach(position => {
-      largestAvailablePieces.forEach(piece => {
-        const pieceSize = piece.shape.length;
-        for (let i = 0; i < pieceSize; i++) {
-          for (let j = 0; j < pieceSize; j++) {
-            for (let k = 0; k < 2; k++) {
-              const rowFactor = k === 0 ? -1 : 1;
-              for (let l = 0; l < 2; l++) {
-                const colFactor = l === 0 ? -1 : 1;
-                for (let m = 0; m < 4; m++) {
-                  for (let n = 0; n < 2; n++) {
-                    const placement = {
-                      player: player.id,
-                      piece: piece.id,
-                      rotations: m,
-                      flipped: n === 1,
-                      position: {
-                        row: position.row + (i * rowFactor),
-                        col: position.col + (j * colFactor)
-                      },
-                      probe: true
-                    }
-                    const placementResult = game.place(placement);
-                    if (placementResult.success) {
-                      const score = getPositionScore(player.id, piece, placement.position);
-                      placement.score = score;
-                      if (!results.some(result => result.score >= score)) {
-                        results.push(placement);
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-    });
-    return results.length ? cb(results) : findMoves(player, pieces, cb);
-  }
-  const findMoves = (player, pieces, cb) => {
-    const results = [];
-    for (let i = 0; i < 20; i++) {
-      for (let j = 0; j < 20; j++) {
-        pieces.forEach(piece => {
-          for (let k = 0; k < 4; k++) {
-            for (let l = 0; l < 2; l++) {
-              const placement = {
-                player: player.id,
-                piece: piece.id,
-                rotations: k,
-                flipped: l === 1,
-                position: {
-                  row: i,
-                  col: j
-                },
-                probe: true
-              }
-              const placementResult = game.place(placement);
-              if (placementResult.success) {
-                results.push(placement);
-              }
-            }
-          }
-        });
-      }
-    }
-    return cb(results);
-  }
   const getAdjacentPositions = (position) => {
     const { row, col } = position;
     return [
@@ -133,167 +42,194 @@ function Computer(game) {
     const width = board[0].length;
     return row < 0 || col < 0 || row >= height - 1 || col >= width - 1;
   }
-  const occupiedByOpposingPlayer = (player, board, position) => {
-    return board[position.row][position.col] !== null && board[position.row][position.col] !== player;
-  }
-  const scoreResultsByAdjacents = (results) => {
-    const board = game.board();
-    return results.map(result => {
-      const adjacents = getAdjacentPositions(result.position)
-        .filter(pos => !isOutOfBounds(pos, board) && occupiedByOpposingPlayer(result.player, board, pos));
-      return Object.assign(result, { adjacentScore: adjacents.length })
-    });
-  }
-  const scoreResultsByDiagonals = (results) => {
-    const board = game.board();
-    return results.map(result => {
-      const diagonals = getDiagonalPositions(result.position)
-        .filter(pos => !isOutOfBounds(pos, board) && occupiedByOpposingPlayer(result.player, board, pos));
-      return Object.assign(result, { diagonalScore: diagonals.length });
-    });
-  }
-  const combineScores = (results) => {
-    return results.map(result => Object.assign(result, { score: result.adjacentScore + result.diagonalScore + result.piece }));
-  }
-  const getShapePositions = (shape, position) => {
-    const shapePositions = [];
-    let leftCol = null;
-    shape.forEach((row, rowIdx) => row.forEach((cell, colIdx) => {
-      if (cell === 'X') {
-        if (leftCol === null) {
-          leftCol = position.col - colIdx;
-        }
-        shapePositions.push({
-          row: position.row + rowIdx,
-          col: leftCol + colIdx
-        });
-      }
-    }));
-    return shapePositions;
+  const isFirstMove = (player, board) => {
+    return !board.some(row => row.some(cell => cell === player));
   }
 
-  const getPositionScore = (player, piece, position) => {
-    const board = game.board();
-    const { shape } = game.pieces().find(p => p.id === piece.id);
-    const shapePositions = getShapePositions(shape, position);
-    let score = piece.id;
-    shapePositions.forEach(pos => {
-      const diagonals = getDiagonalPositions(pos).filter(p => {
-        return !isOutOfBounds(p, board) && board[pos.row][pos.col] !== player && !occupiedByOpposingPlayer(player, board, pos)
-      });
-      const adjacents = getAdjacentPositions(pos).filter(p => {
-        return !isOutOfBounds(p, board) && occupiedByOpposingPlayer(player, board, pos)
-      });
-      score += diagonals.length + adjacents.length;
-    });
+  const distanceToCenter = (position) => {
+    // chebyshev distance
+    return Math.max(Math.abs(10 - position.row), Math.abs(10 - position.col));
+  }
+
+  const freeCorners = (player, board) => {
+
+    let score = 0;
+
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[0].length; j++) {
+        if (board[i][j] === player.id) {
+          const position = { row: i, col: j };
+          const diagonals = getDiagonalPositions(position);
+          diagonals.forEach(d => {
+            const diagonalAdjacents = getAdjacentPositions(d);
+            diagonalAdjacents.forEach(adj => {
+              if (!isOutOfBounds(adj, board)) {
+                // if adjacent position is occupied by opposing player - potential bloke
+                if (board[adj.row][adj.col] !== null && board[adj.row][adj.col] !== player.id || board[adj.row][adj.col] === null) {
+                  score += 1;
+                }
+              } else {
+                score -= 1;
+              }
+            });
+          });
+
+          const adjacents = getAdjacentPositions(position);
+          adjacents.forEach(adj => {
+            if (!isOutOfBounds(adj, board)) {
+              if (board[adj.row][adj.col] !== null) {
+                const opponent = board[adj.row][adj.col];
+                const opponentDiagonals = getDiagonalPositions({ row: adj.row, col: adj.col });
+                opponentDiagonals.forEach(d => {
+                  if (!isOutOfBounds(d, board)) {
+                    // is opponent corner piece
+                    if (board[d.row][d.col] === opponent) {
+                      const isPlayerDiagonal = diagonals.find(p => p.row === d.row && p.col === d.col);
+                      if (isPlayerDiagonal === undefined) {
+                        score += 2;
+                      } else {
+                        score -= 2;
+                      }
+                    }
+                  }
+                });
+              }
+            } else {
+              score -= 2;
+            }
+          });
+        }
+      }
+    }
+
     return score;
   }
 
-
-  const totalPositionScore = (results) => {
-    return results;
-  }
-  const getMove = (results) => {
-    return results[Math.floor(Math.random() * results.length)];
-  }
-  const makeMove = (move) => {
-    // const { piece, flipped, rotations, position } = results[Math.floor(Math.random() * results.length)];
-    const { piece, flipped, rotations, position } = move;
-    moveCount++;
-    console.log(`Move: ${moveCount}\nPlayer: ${move.player}\nScore: ${move.score}`);
-    return game.place({ piece, flipped, rotations, position });
-  }
-  const playTurn = (player, piece) => {
-    let moves = findMoves(player, piece, totalPositionScore);
-    if (moves.length > 0) {
-      const maxScore = moves.reduce((max, curr) => max.score > curr.score ? max : curr)[0];
-      if (!maxScore) {
-        moves = moves.map(move => {
-            const vd = vectorDifferenceFromCenter(move.position)
-              .reduce((a, b) => ((Math.abs(a) + Math.abs(b)) / 2));
-            return Object.assign(move, { vScore: vd });
-          })
-          .sort((a, b) => a.vScore < b.vScore);
-      }
-      const bestMove = moves[0];
-      return makeMove(bestMove);
-    } else {
-      const availablePieces = game.availablePieces({ player: player.id });
-      const currentIndex = availablePieces.findIndex(p => (p.id === piece.id && p.numCells === piece.numCells));
-      const nextPiece = availablePieces[currentIndex - 1];
-      return nextPiece ? playTurn(player, nextPiece) : game.pass();
-    }
-
-  }
-  const playBestMove = (bestPositions) => {
-    const bestMove = bestPositions.reduce((move1, move2) => {
-      return move1.score > move2.score ? move1 : move2;
-    });
-    return makeMove(bestMove);
-  }
-  const findBestMove = (player, pieces) => {
-    // const maxAvailablePieceCells = Math.max(...pieces.map(piece => piece.numCells));
-    // const largestAvailablePieces = pieces.filter(p => p.numCells === maxAvailablePieceCells);
-    console.time('findbestmove');
-    const bestPositions = findAndTestAvailablePositions(player, pieces, totalPositionScore);
-    // const bestMove = testAvailablePositions.reduce((pieceMoves1, pieceMoves2) => {
-    //   const bestMove1 = pieceMoves1.length ? pieceMoves1.reduce((m1, m2) => m1.score > m2.score ? m1 : m2) : 0;
-    //   const bestMove2 = pieceMoves2.length ? pieceMoves2.reduce((m1, m2) => m1.score > m2.score ? m1 : m2) : 0;
-    //   return bestMove1.score > bestMove2.score ? bestMove1 : bestMove2;
-    // });
-    console.timeEnd('findbestmove');
-    return bestPositions.length ? playBestMove(bestPositions) : game.pass();
-  }
-  const playGame = () => {
+  const play = (game) => {
+    const board = game.board();
     const player = game.currentPlayer();
-    const availablePieces = game.availablePieces({ player: player.id });
-    if (availablePieces.length > 0) {
-      // const maxAvailablePieceCells = Math.max(...availablePieces.map(piece => piece.numCells));
-      // const largestAvailablePieces = availablePieces.filter(p => p.numCells === maxAvailablePieceCells);
-      // const moveResultsByPiece = largestAvailablePieces.map(piece => findMoves(player, piece, scoreResultsByDiagonals)[0]);
-      // console.log(moveResultsByPiece);
-      // const selectedPiece = largestAvailablePieces[Math.floor(Math.random() * largestAvailablePieces.length)];
-      // const selectedPiece = availablePieces.reduce((max, curr) => max.numCells > curr.numCells ? max : curr);
-      findBestMove(player, availablePieces);
+
+    const availablePositions = [];
+
+    const firstMove = isFirstMove(player.id, board);
+
+    if (firstMove) {
+
+      availablePositions.push(getCorrectCornerPosition(player.id, board));
+
     } else {
-      game.pass();
+
+      for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board[0].length; j++) {
+          if (board[i][j] === player.id) {
+            const position = { row: i, col: j };
+            const diagonals = getDiagonalPositions(position);
+            diagonals.forEach(d => {
+              const adjacents = getAdjacentPositions(d);
+              if (adjacents.some(adj => !isOutOfBounds(adj, board) && board[adj.row][adj.col] === null)) {
+                availablePositions.push(d);
+              }
+            });
+          }
+        }
+      }
+
     }
+
+    const results = [];
+
+    const pieces = game.availablePieces({ player: player.id });
+
+    availablePositions.forEach(position => {
+      const { row, col } = position;
+      pieces.forEach(piece => {
+
+        const pieceWidth = piece.shape.length;
+        const pieceHeight = piece.shape[0].length
+
+        for (let i = 0; i < pieceWidth; i++) {
+          for (let j = 0; j < pieceHeight; j++) {
+            for (let k = 0; k < 4; k++) {
+              for (let l = 0; l < 2; l++) {
+                const placement = {
+                  player: player.id,
+                  piece: piece.id,
+                  rotations: k,
+                  flipped: l === 1,
+                  position: {
+                    row: row + i,
+                    col: col + j
+                  },
+                  probe: true
+                }
+                const placementResult = game.place(placement);
+                if (placementResult.success) {
+                  placement.positions = placementResult.positions;
+                  results.push(placement);
+                }
+              }
+            }
+          }
+        }
+        for (let i = 0; i < pieceWidth; i++) {
+          for (let j = 0; j < pieceHeight; j++) {
+            for (let k = 0; k < 4; k++) {
+              for (let l = 0; l < 2; l++) {
+                const placement = {
+                  player: player.id,
+                  piece: piece.id,
+                  rotations: k,
+                  flipped: l === 1,
+                  position: {
+                    row: row + (i * -1),
+                    col: col + (j * -1)
+                  },
+                  probe: true
+                }
+                const placementResult = game.place(placement);
+                if (placementResult.success) {
+                  placement.positions = placementResult.positions;
+                  results.push(placement);
+                }
+              }
+            }
+          }
+        }
+      });
+    });
+
+    const scoredResults = results.map(result => {
+      const testBoard = game.board();
+      result.positions.forEach(p => testBoard[p.row][p.col] === player.id);
+      const freeCornerScore = freeCorners(player, testBoard);
+      const pieceIdScore = result.piece;
+      const distanceScore = result.positions.reduce((total, curr) => (distanceToCenter(curr)), 0);
+      return Object.assign(result, { score: (freeCornerScore / distanceScore) + pieceIdScore });
+    });
+
+    if (scoredResults.length) {
+
+      const move = scoredResults.reduce((a, b) => a.score > b.score ? a : b);
+
+      const { piece, flipped, rotations, position } = move;
+
+      game.place({ piece, flipped, rotations, position });
+      moveCount++;
+      console.log({ moves: scoredResults.length, turn: moveCount, highestScore: move });
+
+    } else {
+
+      game.pass();
+
+      console.log('passing!');
+    }
+
     return game.turns();
+
   }
   return {
-    getMove,
-    playTurn,
-    playGame,
-    findBestMove,
-    findAvailablePositionsForMove
+    play
   }
 }
 
 module.exports = Computer;
-//
-// const game = require('../game/game');
-//
-// function testComputer() {
-//   const results = [...Array(4).fill(0)]
-//   let games = 0;
-//   console.time('onegame');
-//   for (let i = 0; i < 1; i++) {
-//     const gResult = playGame();
-//     console.log(gResult);
-//     gResult.forEach((player, id) => results[id] += player.score);
-//     games++;
-//     console.timeEnd('onegame');
-//   }
-//   return results.map((score, index) => ({ player: index + 1, avgscore: score / games }));
-// }
-//
-// function playGame() {
-//   const g = game();
-//   const c = new Computer(g);
-//   while (!g.isOver()) {
-//     c.playGame();
-//   }
-//   return g.players().map(player => Object.assign({}, { id: player.id, score: g.numRemaining({ player: player.id }) }));
-// }
-// // playGame();
-// testComputer();

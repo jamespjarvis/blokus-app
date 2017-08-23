@@ -73,7 +73,7 @@ io.on('connection', (socket) => {
   });
   socket.on('computer:turn', ({ turns }) => {
     const g = game();
-    const c = new Computer(g);
+    const c = new Computer();
     const prevTurns = currentGames[clientGameId].savedTurns;
     turns.forEach(turn => {
       if (turn.isPass) {
@@ -88,7 +88,9 @@ io.on('connection', (socket) => {
         g.place(placement);
       }
     });
-    c.playGame();
+
+    c.play(g);
+
     io.to(clientGameId).emit('take:turn', ({ turns: g.turns() }));
   });
   const tearDown = function() {
