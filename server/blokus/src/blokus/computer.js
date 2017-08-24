@@ -75,9 +75,14 @@ function Computer(game) {
             const diagonalAdjacents = getAdjacentPositions(d);
             diagonalAdjacents.forEach(adj => {
               if (!isOutOfBounds(adj, board)) {
-                // if adjacent position is occupied by opposing player - potential bloke
-                if ((board[adj.row][adj.col] !== null && board[adj.row][adj.col] !== player.id) || (board[adj.row][adj.col] === null)) {
+                if (board[adj.row][adj.col] === null) {
                   score += 1;
+                } else {
+                  if (board[adj.row][adj.col] !== player.id) {
+                    score += 1;
+                  } else {
+                    score -= 1;
+                  }
                 }
               } else {
                 score -= 1;
@@ -89,7 +94,7 @@ function Computer(game) {
 
           adjacents.forEach(adj => {
             if (!isOutOfBounds(adj, board)) {
-              if (board[adj.row][adj.col] !== null) {
+              if (board[adj.row][adj.col] !== null && board[adj.row][adj.col] !== player.id) {
                 const opponent = board[adj.row][adj.col];
                 const opponentDiagonals = getDiagonalPositions({ row: adj.row, col: adj.col });
                 opponentDiagonals.forEach(d => {
@@ -108,7 +113,7 @@ function Computer(game) {
                 });
               }
             } else {
-              score -= 2;
+              score -= 1;
             }
           });
         }
@@ -218,7 +223,10 @@ function Computer(game) {
       const pieceIdScore = result.piece;
       const distanceScore = result.positions.reduce((total, curr) => (distanceToCenter(curr)), 0);
       const cornerDistanceScore = result.positions.reduce((total, curr) => (distanceFromCorner(curr, player.id, testBoard)), 0);
-      return Object.assign(result, { score: ((freeCornerScore / cornerDistanceScore - distanceScore) * pieceIdScore) });
+
+      const score = (freeCornerScore + ((pieceIdScore * cornerDistanceScore) / distanceScore))
+      console.log({ freeCornerScore, cornerDistanceScore, distanceScore, pieceIdScore, score });
+      return Object.assign(result, { score });
     });
 
     if (scoredResults.length) {
