@@ -55,7 +55,7 @@ function Computer(game) {
   // get number of cells away from starting corner
   const distanceFromCorner = (position, player, board) => {
     const corner = getCorrectCornerPosition(player, board);
-    return Math.max(Math.abs(corner.row - position.row), Math.abs(corner.col - pos.col));
+    return Math.max(Math.abs(corner.row - position.row), Math.abs(corner.col - position.col));
   }
   // calculate a score based on the players available free corners and current board state
   const freeCorners = (player, board) => {
