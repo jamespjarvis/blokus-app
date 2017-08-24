@@ -218,7 +218,7 @@ function Computer(game) {
       const pieceIdScore = result.piece;
       const distanceScore = result.positions.reduce((total, curr) => (distanceToCenter(curr)), 0);
       const cornerDistanceScore = result.positions.reduce((total, curr) => (distanceFromCorner(curr, player.id, testBoard)), 0);
-      return Object.assign(result, { score: (freeCornerScore / ((cornerDistanceScore + pieceIdScore) - distanceScore)) });
+      return Object.assign(result, { score: ((freeCornerScore / cornerDistanceScore - distanceScore) * pieceIdScore) });
     });
 
     if (scoredResults.length) {
