@@ -10,7 +10,7 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
 const { game } = require('./blokus/src/index');
-const Computer = require('./blokus/src/blokus/computer');
+const Computer = require('./blokus/src/blokus/bots/computer');
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, '..', 'build')));

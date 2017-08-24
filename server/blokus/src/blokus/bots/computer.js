@@ -1,3 +1,5 @@
+const { freeCorners } = require('./lib');
+
 function Computer(game) {
   let moveCount = 0;
   // each players starting corner
@@ -58,7 +60,7 @@ function Computer(game) {
     return Math.max(Math.abs(corner.row - position.row), Math.abs(corner.col - position.col));
   }
   // calculate a score based on the players available free corners and current board state
-  const freeCorners = (player, board) => {
+  const openCorners = (player, board) => {
 
     let score = 0;
 
@@ -219,20 +221,28 @@ function Computer(game) {
     const scoredResults = results.map(result => {
       const testBoard = game.board();
       result.positions.forEach(p => testBoard[p.row][p.col] === player.id);
-      const freeCornerScore = freeCorners(player, testBoard);
+      // console.time('freeCorners');
+      const freeCornerScore = freeCorners(player.id, testBoard);
+      // console.timeEnd('freeCorners');
       const pieceIdScore = result.piece;
+      const pieceSizeScore = result.positions.length;
       const distanceScore = result.positions.reduce((total, curr) => (distanceToCenter(curr)), 0);
       const cornerDistanceScore = result.positions.reduce((total, curr) => (distanceFromCorner(curr, player.id, testBoard)), 0);
-
-      const score = (freeCornerScore + ((pieceIdScore * cornerDistanceScore) / distanceScore))
-      // console.log({ freeCornerScore, cornerDistanceScore, distanceScore, pieceIdScore, score });
+      // play towards center on opening moves
+      const turnNumber = game.turns().length % 4;
+      let score = freeCornerScore;
+      if (turnNumber < 5) {
+        score += (pieceIdScore + cornerDistanceScore) / distanceScore;
+      } else {
+        score += (pieceIdScore + cornerDistanceScore);
+      }
       return Object.assign(result, { score });
     });
 
     if (scoredResults.length) {
 
       const move = scoredResults.reduce((a, b) => a.score > b.score ? a : b);
-
+      
       const { piece, flipped, rotations, position } = move;
 
       game.place({ piece, flipped, rotations, position });

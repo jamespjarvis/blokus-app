@@ -93,6 +93,9 @@ export class Blokus extends Component {
     let selectedPiece = this.state.selectedPiece || {};
     if (clientPlayer) {
       const clientAvailablePieces = this.game.availablePieces({ player: clientPlayer.id });
+      if (!clientAvailablePieces.length && clientPlayer.id === currentPlayer.id) {
+        this.game.pass();
+      }
       const availablePieceIds = clientAvailablePieces.map(piece => piece.id);
       if (!availablePieceIds.includes(selectedPiece.id)) {
         selectedPiece = clientAvailablePieces.reduce((max, curr) => max.id > curr.id ? max : curr);

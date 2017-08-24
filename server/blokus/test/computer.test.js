@@ -1,13 +1,9 @@
-const chai = require('chai');
-const assert = chai.assert;
+const game = require('../src/game/game');
+const Computer = require('../src/blokus/bots/computer');
 
-const Computer = require('../src/blokus/computer');
+const g = game();
 
-describe('computer.js', () => {
-  describe('new computer player', () => {
-    it('should create a new computer player', () => {
-      const computer = new Computer();
-      assert.isOk(computer);
-    });
-  });
-});
+while (!g.isOver()) {
+  const c = new Computer(g);
+  c.play();
+}
