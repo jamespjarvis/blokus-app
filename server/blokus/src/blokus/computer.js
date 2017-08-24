@@ -1,4 +1,4 @@
-function Computer() {
+function Computer(game) {
   let moveCount = 0;
   // each players starting corner
   const getCorrectCornerPosition = (player, board) => {
@@ -113,7 +113,7 @@ function Computer() {
     return score;
   }
 
-  const play = (game) => {
+  const play = () => {
     const board = game.board();
     const player = game.currentPlayer();
 
@@ -223,13 +223,11 @@ function Computer() {
 
       game.place({ piece, flipped, rotations, position });
       moveCount++;
-      console.log({ moves: scoredResults.length, turn: moveCount, highestScore: move });
 
     } else {
 
       game.pass();
 
-      console.log('passing!');
     }
 
     return game.turns();
