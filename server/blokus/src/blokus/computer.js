@@ -50,7 +50,7 @@ function Computer(game) {
   // get number of cells away from center of board
   const distanceToCenter = (position) => {
     // chebyshev distance
-    return Math.max(Math.abs(10 - position.row), Math.abs(10 - position.col));
+    return Math.max(Math.abs(9.5 - position.row), Math.abs(9.5 - position.col));
   }
   // get number of cells away from starting corner
   const distanceFromCorner = (position, player, board) => {
