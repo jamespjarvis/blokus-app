@@ -225,7 +225,7 @@ function Computer(game) {
       const cornerDistanceScore = result.positions.reduce((total, curr) => (distanceFromCorner(curr, player.id, testBoard)), 0);
 
       const score = (freeCornerScore + ((pieceIdScore * cornerDistanceScore) / distanceScore))
-      console.log({ freeCornerScore, cornerDistanceScore, distanceScore, pieceIdScore, score });
+      // console.log({ freeCornerScore, cornerDistanceScore, distanceScore, pieceIdScore, score });
       return Object.assign(result, { score });
     });
 
