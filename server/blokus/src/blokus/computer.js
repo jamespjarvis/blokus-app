@@ -52,6 +52,11 @@ function Computer(game) {
     // chebyshev distance
     return Math.max(Math.abs(10 - position.row), Math.abs(10 - position.col));
   }
+  // get number of cells away from starting corner
+  const distanceFromCorner = (position, player, board) => {
+    const corner = getCorrectCornerPosition(player, board);
+    return Math.max(Math.abs(corner.row - position.row), Math.abs(corner.col - pos.col));
+  }
   // calculate a score based on the players available free corners and current board state
   const freeCorners = (player, board) => {
 
@@ -212,7 +217,8 @@ function Computer(game) {
       const freeCornerScore = freeCorners(player, testBoard);
       const pieceIdScore = result.piece;
       const distanceScore = result.positions.reduce((total, curr) => (distanceToCenter(curr)), 0);
-      return Object.assign(result, { score: (freeCornerScore / distanceScore) + pieceIdScore });
+      const cornerDistanceScore = result.positions.reduce((total, curr) => (distanceFromCorner(curr, player, board)), 0);
+      return Object.assign(result, { score: ((freeCornerScore * cornerDistanceScore) / distanceScore) + pieceIdScore });
     });
 
     if (scoredResults.length) {
