@@ -21,9 +21,11 @@ export class PieceList extends Component {
     const playerClass = this.props.player ? `player-${this.props.player.id + 1}` : '';
     const currentPlayerPieceList = currentPlayer && (this.props.player || {}).id === currentPlayer.id;
     const pieceListClasses = `piece-list-container ${playerClass} ${currentPlayerPieceList ? 'current-player-piece-list' : ''}`;
+    const isHuman = this.props.isHuman ? 'Human' : 'Robot';
     const playerInfo = this.props.player ?
       (<div className="player-info">
         <div><b>{`Player ${this.props.player.id + 1}`}</b></div>
+        <small>{this.props.isClientPlayer ? '': isHuman}</small>
         <div>{this.props.score}</div>
       </div>) : (<div></div>);
     return (

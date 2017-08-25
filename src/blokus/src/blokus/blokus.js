@@ -34,13 +34,19 @@ const Blokus = (options = {}) => {
     playerThatPassed.hasPassed = true;
   }
 
+  const setPlayerHuman = function({ player }) {
+    const playerToToggle = players.find(p => p.id === player);
+    playerToToggle.isHuman = true;
+  }
+
   return {
     players: () => cloneDeep(players),
     pieces: () => cloneDeep(pieces),
     board: () => cloneDeep(board),
     place,
     availablePieces,
-    setPlayerPassed
+    setPlayerPassed,
+    setPlayerHuman
   }
 }
 

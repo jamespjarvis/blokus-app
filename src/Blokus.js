@@ -23,7 +23,7 @@ export class Blokus extends Component {
     this.state = {
       joined: false,
       clientPlayer: null,
-      playerList: null,
+      playerList: [],
       ...this.getInitialGameState()
     }
   }
@@ -32,8 +32,8 @@ export class Blokus extends Component {
     socket.on('joined:game', ({ player, playerList }) => {
       const players = this.game.players();
       const clientPlayer = players.find(p => p.id === player);
-      socket.emit('update:players');
       this.setState({ joined: true, clientPlayer, playerList });
+      socket.emit('update:players');
     });
 
     socket.on('nonexistant:game', ({ gameId }) => {
@@ -87,7 +87,7 @@ export class Blokus extends Component {
     const playerList = this.state.playerList;
     const currentPlayer = this.game.currentPlayer();
 
-    if(currentPlayer !== null && !playerList.includes(currentPlayer.id)) {
+    if (currentPlayer !== null && !playerList.includes(currentPlayer.id)) {
       const turns = this.game.turns();
       socket.emit('computer:turn', { turns });
     }
@@ -107,7 +107,9 @@ export class Blokus extends Component {
     this.setState({
       board,
       currentPlayer,
-      selectedPiece
+      selectedPiece,
+      selectedFlipped: false,
+      selectedRotations: 0
     });
   }
   catchUpTurns = (turns) => {
@@ -186,7 +188,7 @@ export class Blokus extends Component {
     }
   }
   setSelectedPiece = piece => {
-    this.setState({ selectedPiece: piece });
+    this.setState({ selectedPiece: piece, selectedFlipped: false, selectedRotations: 0 });
   }
   setSelectedFlipped = flipped => {
     this.setState({ selectedFlipped: flipped });
@@ -205,10 +207,23 @@ export class Blokus extends Component {
         pieces: player ? this.game.availablePieces({ player: player.id }) : []
       };
     });
-    const pieceLists = players.filter(player => player.id !== clientPlayerId)
+    const pieceLists = !isOver ?
+      players.filter(player => player.id !== clientPlayerId)
       .map(player => {
         return (
           <PieceList pieces={player.pieces}
+                      isHuman={this.state.playerList.includes(player.id)}
+                      player={player}
+                      currentPlayer={this.state.currentPlayer}
+                      isOver={isOver}
+                      score={player.score}
+                      key={player.id}
+                    />
+        );
+      }) : players.map(player => {
+        return (
+          <PieceList pieces={player.pieces}
+                      isHuman={this.state.playerList.includes(player.id)}
                       player={player}
                       currentPlayer={this.state.currentPlayer}
                       isOver={isOver}
@@ -220,9 +235,11 @@ export class Blokus extends Component {
 
     const clientPlayerPieces = clientPlayerId !== null ? players.find(player => player.id === clientPlayer.id).pieces : [];
     const clientPlayerScore = clientPlayerId !== null ? this.game.numRemaining({ player: clientPlayerId }) : 0;
+
+    const otherPlayerPieceViewClasses = isOver ? 'other-player-pieces is-over' : 'other-player-pieces';
     const gameView = (
       <div className="blokus-container">
-          <div className="other-player-pieces">
+          <div className={otherPlayerPieceViewClasses}>
             {pieceLists}
           </div>
           <Board board={this.state.board}
@@ -235,6 +252,7 @@ export class Blokus extends Component {
         {!isOver ?
           <div className="piece-control-container">
             <PieceList pieces={clientPlayerPieces}
+              isClientPlayer={true}
               score={clientPlayerScore}
               selectedPiece={this.state.selectedPiece}
               setSelectedPiece={this.setSelectedPiece}

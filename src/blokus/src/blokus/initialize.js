@@ -7,7 +7,7 @@ function processOptions({ height = 20, width = 20, players = [] }) {
     return {
       id: playerId,
       name: players[playerId] || `Player ${playerId}`,
-      isHuman: true,
+      isHuman: false,
       hasPassed: false
     }
   });

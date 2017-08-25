@@ -65,7 +65,9 @@ const Game = (options = {}) => {
 
     return placementResult;
   }
-
+  const setPlayerHuman = function({ player }) {
+    gameBlokus.setPlayerHuman({ player });
+  }
   const isOver = function() {
     return this.currentPlayer() === null;
   }
@@ -87,6 +89,7 @@ const Game = (options = {}) => {
     pass,
     isOver,
     numRemaining,
+    setPlayerHuman
   }
 }
 

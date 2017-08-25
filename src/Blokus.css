@@ -100,11 +100,12 @@
 .other-player-pieces {
   grid-column: 1 / 3;
   grid-row: 2;
-}
-
-.other-player-pieces {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+}
+
+.other-player-pieces.is-over {
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .other-player-pieces .piece-list-container .player-piece-list {
