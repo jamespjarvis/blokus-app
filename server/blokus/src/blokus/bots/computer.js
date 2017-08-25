@@ -232,9 +232,9 @@ function Computer(game) {
       const turnNumber = game.turns().length % 4;
       let score = freeCornerScore;
       if (turnNumber < 5) {
-        score += (pieceIdScore + cornerDistanceScore) / distanceScore;
+        score += ((pieceIdScore * pieceSizeScore) + cornerDistanceScore) / distanceScore;
       } else {
-        score += (pieceIdScore + cornerDistanceScore);
+        score += ((pieceIdScore * pieceSizeScore) + cornerDistanceScore);
       }
       return Object.assign(result, { score });
     });
@@ -242,7 +242,7 @@ function Computer(game) {
     if (scoredResults.length) {
 
       const move = scoredResults.reduce((a, b) => a.score > b.score ? a : b);
-      
+
       const { piece, flipped, rotations, position } = move;
 
       game.place({ piece, flipped, rotations, position });

@@ -59,9 +59,8 @@ io.on('connection', (socket) => {
       socket.emit('nonexistant:game', { gameId });
     }
   });
-  socket.on('update:players', ({ gameId }) => {
-    socket.emit('update:players', ({ players: currentGames[gameId].connectedPlayers }));
-  });
+
+  socket.on('update:players', () => io.to(clientGameId).emit('update:players', { players: currentGames[clientGameId].connectedPlayers }));
 
   socket.on('take:turn', function({ turns }) {
     const savedTurns = currentGames[clientGameId].savedTurns;
@@ -88,8 +87,11 @@ io.on('connection', (socket) => {
         g.place(placement);
       }
     });
-    currentGames[clientGameId].savedTurns = c.play();
-    io.to(clientGameId).emit('take:turn', { turns: g.turns() });
+    c.play();
+
+    const newTurns = g.turns();
+    currentGames[clientGameId].savedTurns = newTurns;
+    io.to(clientGameId).emit('take:turn', { turns: newTurns });
   });
   const tearDown = function() {
     socket.leave(clientGameId, () => {

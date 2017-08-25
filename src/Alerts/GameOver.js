@@ -5,7 +5,7 @@ export function GameOver(props) {
   const winner = `Player ${players[0].id + 1} Wins!`;
   const playerScores = players.map((player, index) => {
     return (
-      <div className="score">
+      <div className="score" key={player.id}>
         {index + 1}. {player.score} pts - Player {player.id + 1}
       </div>
     );

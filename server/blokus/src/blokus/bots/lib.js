@@ -40,9 +40,7 @@ function adjacencies(board, player) {
     const adjs = adjacent(position);
     for (let j = 0; j < adjs.length; j++) {
       const adj = adjs[j];
-      const occupiedByPlayer = occupiedCells.some(cell => {
-        return cell.row === adj.row && cell.col === adj.col;
-      });
+      const occupiedByPlayer = occupiedCells.some(cell => cell.row === adj.row && cell.col === adj.col);
       if (!occupiedByPlayer) {
         adjacents.push(adj);
       }
@@ -55,16 +53,12 @@ function cornerAdjacencies(board, player) {
   const cornerAdjacents = [];
   const occupiedCells = playerOccupiedCells(board, player);
   const adjs = adjacencies(board, player);
-  for (let i = 0; i < adjs.length; i++) {
-    const position = adjs[i];
+  for (let i = 0; i < occupiedCells.length; i++) {
+    const position = occupiedCells[i];
     const diagonals = diagonal(position);
     diagonals.forEach(diag => {
-      const occupiedByPlayer = occupiedCells.some(cell => {
-        return cell.row === diag.row && cell.col === diag.col;
-      });
-      const adjacentToPlayer = adjs.some(cell => {
-        return cell.row === diag.row && cell.col === diag.col;
-      });
+      const occupiedByPlayer = occupiedCells.some(cell => cell.row === diag.row && cell.col === diag.col);
+      const adjacentToPlayer = adjs.some(cell => cell.row === diag.row && cell.col === diag.col);
       if (!occupiedByPlayer && !adjacentToPlayer) {
         cornerAdjacents.push(diag);
       }
@@ -91,7 +85,6 @@ function freeCorners(player, board) {
       if (isNotOccupied) {
         const adjs = adjacent(position);
         const adjOccupiedByPlayer = adjs.some(adj => isInBounds(adj, board) && board[adj.row][adj.col] === player);
-
         if (!adjOccupiedByPlayer) {
           score += 1;
         }

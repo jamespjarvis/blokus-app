@@ -29,10 +29,10 @@ export class Blokus extends Component {
   }
   componentDidMount() {
     socket.emit('join:game', { gameId: this.gameId });
-
     socket.on('joined:game', ({ player, playerList }) => {
       const players = this.game.players();
       const clientPlayer = players.find(p => p.id === player);
+      socket.emit('update:players');
       this.setState({ joined: true, clientPlayer, playerList });
     });
 
@@ -41,10 +41,7 @@ export class Blokus extends Component {
     });
 
     socket.on('update:players', ({ players }) => {
-      const currentPlayer = this.game.currentPlayer();
-      if (!this.game.isOver() && currentPlayer !== null && !players.includes(currentPlayer.id)) {
-        socket.emit('computer:turn', ({ turns: this.game.turns() }));
-      }
+      this.setState({ playerList: players });
     });
 
     socket.on('take:turn', ({ turns }) => {
@@ -63,7 +60,6 @@ export class Blokus extends Component {
     socket.off('joined:game');
     socket.off('nonexistant:game');
     socket.off('take:turn');
-    socket.off('update:players');
   }
   getInitialGameState = () => {
     this.game = game();
@@ -88,22 +84,25 @@ export class Blokus extends Component {
   }
   updateStateAfterTurn = () => {
     const board = this.game.board();
+    const playerList = this.state.playerList;
     const currentPlayer = this.game.currentPlayer();
+
+    if(currentPlayer !== null && !playerList.includes(currentPlayer.id)) {
+      const turns = this.game.turns();
+      socket.emit('computer:turn', { turns });
+    }
+
     const clientPlayer = this.state.clientPlayer;
     let selectedPiece = this.state.selectedPiece || {};
     if (clientPlayer) {
       const clientAvailablePieces = this.game.availablePieces({ player: clientPlayer.id });
-      if (!clientAvailablePieces.length && clientPlayer.id === currentPlayer.id) {
-        this.game.pass();
-      }
       const availablePieceIds = clientAvailablePieces.map(piece => piece.id);
-      if (!availablePieceIds.includes(selectedPiece.id)) {
+      if (!availablePieceIds.includes(selectedPiece.id) && clientAvailablePieces.length) {
         selectedPiece = clientAvailablePieces.reduce((max, curr) => max.id > curr.id ? max : curr);
       }
     } else {
       selectedPiece = null;
     }
-    socket.emit('update:players', ({ gameId: this.gameId }));
 
     this.setState({
       board,

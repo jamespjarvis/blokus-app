@@ -12,7 +12,7 @@ const Game = (options = {}) => {
     const turns = this.turns();
     const players = gameBlokus.players();
 
-    const everyPlayerHasPassed = players.every(player => player.hasPassed);
+    const everyPlayerHasPassed = players.every(player => player.hasPassed || !this.availablePieces({ player: player.id }).length);
 
     if (everyPlayerHasPassed) {
       return null;
