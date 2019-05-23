@@ -52,6 +52,7 @@
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom"
   },
+  "homepage": "/blokus",
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}"

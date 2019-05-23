@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import io from 'socket.io-client';
 
-const socket = io();
+const socket = io('http://localhost:8012');
 
 export class GameSelection extends Component {
   constructor(props) {

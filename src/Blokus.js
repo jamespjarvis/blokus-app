@@ -13,7 +13,7 @@ import { PieceTransform } from './Control/PieceTransform';
 
 import { GameOver } from './Alerts/GameOver';
 
-const socket = io();
+const socket = io('http://localhost:8012');
 
 
 export class Blokus extends Component {
@@ -51,7 +51,7 @@ export class Blokus extends Component {
     });
 
     socket.on('disconnect', () => {
-      alert('you have been disconnected');
+      // alert('you have been disconnected');
       this.props.history.push('/');
     });
   }

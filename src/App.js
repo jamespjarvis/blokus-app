@@ -10,7 +10,7 @@ class App extends Component {
   render() {
     return (
       <div className="app-container">
-        <Router>
+        <Router basename={"/blokus"}>
           <div>
             <div className="content-container">
               <Route exact path="/" component={GameSelection} />
